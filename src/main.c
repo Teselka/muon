@@ -668,7 +668,7 @@ cmd_dump_toolchains(struct workspace *wk, uint32_t argc, uint32_t argi, char *co
 			uint32_t component;
 			const char *type = sep + 1;
 
-			if (!toolchain_component_from_s(opt_ctx.optarg, &component)) {
+			if (!toolchain_component_from_s(wk, opt_ctx.optarg, &component)) {
 				LOG_E("unknown toolchain component: %s", opt_ctx.optarg);
 				return false;
 			}
@@ -1454,7 +1454,7 @@ cmd_main(struct workspace *wk, uint32_t argc, uint32_t argi, char *const argv[])
 		{ "build",
 			cmd_build,
 			"setup and build in a single step",
-			"Invoke muon setup + ninja in a single command.  Additionally setup will only "
+			"Invoke muon setup and build in a single command.  Additionally, setup will only "
 			"run if the passed options have changed, including options implicitly set "
 			"using environment variables."
 		},

@@ -329,6 +329,18 @@ vm_warning_at(struct workspace *wk, uint32_t ip, const char *fmt, ...)
 }
 
 void
+vm_deprecation_at(struct workspace *wk, uint32_t ip, const char *since, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	static char buf[1024];
+	obj_vsnprintf(wk, buf, ARRAY_LEN(buf), fmt, args);
+	va_end(args);
+
+	vm_diagnostic(wk, 0, log_warn, 0, "deprecated since %s: %s", since, buf);
+}
+
+void
 vm_error(struct workspace *wk, const char *fmt, ...)
 {
 	va_list args;
@@ -388,7 +400,8 @@ typecheck_and_mutate_function_arg(struct workspace *wk, uint32_t ip, obj *val, t
 
 	// If obj_file or tc_file is requested, and the argument is an array of
 	// length 1, try to unpack it.
-	if (!listify && (type == obj_file || (type & tc_file) == tc_file)) {
+	if (!listify && (t == obj_array || t == obj_typeinfo)
+		&& (type == obj_file || (flatten_type(wk, type) & tc_file) == tc_file)) {
 		if (t == obj_array && get_obj_array(wk, *val)->len == 1) {
 			obj i0;
 			i0 = obj_array_index(wk, *val, 0);

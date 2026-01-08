@@ -67,6 +67,16 @@ toolchain.register_archiver(
 )
 
 toolchain.register_archiver(
+    'ar-solaris',
+    exe: 'ar',
+    handlers: {
+        'version': ['-V'],
+        'base': ['-csr'],
+        'needs_wipe': true,
+    },
+)
+
+toolchain.register_archiver(
     'llvm-lib',
     exe: 'llvm-lib',
     inherit: 'lib',
@@ -269,6 +279,14 @@ toolchain.register_linker(
     },
 )
 
+toolchain.register_linker(
+    'ld-solaris',
+    exe: 'ld',
+    inherit: 'ld-posix',
+    handlers: {
+        'version': ['-V'],
+    },
+)
 ################################################################################
 # compilers
 ################################################################################
@@ -342,8 +360,22 @@ toolchain.register_compiler(
 toolchain.register_compiler(
     'gcc',
     exe: {'c': 'gcc', 'objc': 'gcc', 'cpp': 'g++', 'objcpp': 'g++'},
-    linker: 'ld',
-    archiver: 'ar-gnu',
+    linker: func(c compiler) -> str
+        m = c.machine()
+        if m.system() == 'sunos'
+            return 'ld-solaris'
+        else
+            return 'ld'
+        endif
+    endfunc,
+    archiver: func(c compiler) -> str
+        m = c.machine()
+        if m.system() == 'sunos'
+            return 'ar-solaris'
+        else
+            return 'ar-gnu'
+        endif
+    endfunc,
     inherit: 'posix',
     detect: func(out str) -> int
         return 'Free Software Foundation' in out ? 100 : 0
